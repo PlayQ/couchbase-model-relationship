@@ -63,6 +63,32 @@ describe "parent" do
       parent.child.age.should eq(5)
     end
 
+    it "finds and returns all the proper objects" do
+      bucket.expects(:get).with(
+        ["parent:1", "parent:2", 'child:1', 'child:2'],
+        quiet: true,
+        extended: true
+      ).returns({
+        "parent:1" => [{name: "abc"}, 0, :cas],
+        "child:2" => [{age: 5}, 0, :cas],
+        "parent:2" => [{name: "def"}, 0, :cas],
+        "child:1" => [{age: 7}, 0, :cas]
+      })
+
+      objects = subject.find_all_with_children(["parent:1", "parent:2"])
+      objects.size.should eq(2)
+      
+      objects.first.id.should eq("parent:1")
+      objects.first.name.should eq("abc")
+      objects.first.child.id.should eq("child:1")
+      objects.first.child.age.should eq(7)
+
+      objects.last.id.should eq("parent:2")
+      objects.last.name.should eq('def')
+      objects.last.child.id.should eq("child:2")
+      objects.last.child.age.should eq(5)
+    end
+
     it "only finds valid children" do
       bucket.expects(:get).with(
         ["parent:1"],
