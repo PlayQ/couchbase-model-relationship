@@ -2,12 +2,16 @@ require 'spec_helper'
 
 class Child < Couchbase::Model
   attribute :age
+
+  has_parent
 end
 
 class Brother < Couchbase::Model
+  has_parent
 end
 
 class Sister < Couchbase::Model
+  has_parent
 end
 
 class ParentTest < Couchbase::Model
@@ -32,8 +36,8 @@ describe "parent" do
   end
 
   it "sets and gets the value properly" do
-    subject.child = :abc
-    subject.child.should eq(:abc)
+    subject.child = (brother = Brother.new)
+    subject.child.should eq(brother)
   end
 
   it "handles multiple children" do
@@ -59,12 +63,9 @@ describe "parent" do
     child = subject.build_child age: 6
 
     child.should eq(subject.child)
-    child.id.should eq('child:123')
     child.age.should eq(6)
+    child.parent.should eq(subject)
   end
-
-  # This should proably be handled on create.
-  it "builds a new object properly when the parent doesn't have an id"
 
   describe "finding objects with children" do
     subject { ParentTest }
