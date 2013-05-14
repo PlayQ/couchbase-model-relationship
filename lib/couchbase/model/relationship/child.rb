@@ -4,12 +4,8 @@ module Couchbase
       module Child
         extend ::ActiveSupport::Concern
 
-        included do
-          alias_method_chain :create, :parent_id
-        end
-
         def create_with_parent_id(options = {})
-          if id.blank? && respond_to?(:parent) && parent.present?
+          if id.blank? && parent.present?
             @id = prefixed_id(parent.id)
           end
 
@@ -19,6 +15,8 @@ module Couchbase
         module ClassMethods
           def has_parent
             attr_accessor :parent
+
+            alias_method_chain :create, :parent_id
           end
         end
       end
