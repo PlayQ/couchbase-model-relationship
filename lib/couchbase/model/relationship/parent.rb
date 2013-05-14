@@ -1,8 +1,12 @@
-# TODO Support for creating children with the ID populated
+# All this behavior assumes the same bucket/connection options are used for the 
+# root object and all children.
+#
 # TODO Transparent child load if object not present (cache missing objects to reduce queries)
 # TODO Set 'parent' in child object to us, so there's not a query when we have the object
 # TODO Support for "required" children (if missing, error) ?
 # TODO Delete children when deleting ourself
+# TODO Create parent first, then children. When all new objects after parent create
+#      we need to set the ID of the children before we save them.
 module Couchbase
   class Model
     module Relationship
@@ -39,6 +43,16 @@ module Couchbase
 
             define_method("#{name}") do
               instance_variable_get :"@_child_#{name}"
+            end
+
+            define_method("build_#{name}") do |attributes = {}|
+              child_class = name.classify.constantize
+
+              attributes.stringify_keys!
+              attributes.merge!('id' => child_class.prefixed_id(id))
+
+              # FIXME If we aren't saved, this will fail
+              send "#{name}=", child_class.new(attributes)
             end
           end
 

@@ -54,6 +54,18 @@ describe "parent" do
     subject.save_with_children.should eq(:saved)
   end
 
+  it "builds a new object properly" do
+    subject.id = "parent_test:123"
+    child = subject.build_child age: 6
+
+    child.should eq(subject.child)
+    child.id.should eq('child:123')
+    child.age.should eq(6)
+  end
+
+  # This should proably be handled on create.
+  it "builds a new object properly when the parent doesn't have an id"
+
   describe "finding objects with children" do
     subject { ParentTest }
     let(:bucket) { stub }
