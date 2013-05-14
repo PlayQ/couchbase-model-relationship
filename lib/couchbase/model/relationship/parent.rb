@@ -31,26 +31,41 @@ module Couchbase
           # FIXME Need to support finding multiple instances with their own children
           # Without doing [id]x queries
           def find_with_children(id, *children)
+            find_all_with_children(id, *children).first
+          end
+
+          def find_all_with_children(ids, *children)
+            ids = Array(ids)
+
             effective_children = if children.blank?
               @_children
             else
               children.select {|child| @_children.include?(child.to_s) }
             end
-
-            child_ids = effective_children.map {|child| child.classify.constantize.prefixed_id(id) }
-
-            results = bucket.get([id, *child_ids], quiet: true, extended: true)
-
-            parent_attributes = results.delete(id)
-
-            if parent_attributes.nil?
-              raise Couchbase::Error::NotFound.new("failed to get value (key=\"#{id}\"")
+            
+            search_ids = ids.dup
+            ids.each do |id|
+              search_ids.concat(effective_children.map do |child| 
+                child.classify.constantize.prefixed_id(id)
+              end)
             end
 
-            raw_new(id, parent_attributes).tap do |parent|
-              results.each_pair do |child_id, child_attributes|
-                parent.send "#{prefix_from_id child_id}=", 
-                  class_from_id(child_id).raw_new(id, child_attributes)
+            results = bucket.get(search_ids, quiet: true, extended: true)
+
+            parent_objects = ids.map do |id|
+              if results.key?(id)
+                raw_new(id, results.delete(id))
+              else
+                raise Couchbase::Error::NotFound.new("failed to get value (key=\"#{id}\"")
+              end
+            end
+
+            parent_objects.each do |parent|
+              results.each do |child_id, child_attributes|
+                if unprefixed_id(parent.id) == unprefixed_id(child_id) 
+                  parent.send "#{prefix_from_id child_id}=", 
+                    class_from_id(child_id).raw_new(child_id, child_attributes)
+                end
               end
             end
           end
