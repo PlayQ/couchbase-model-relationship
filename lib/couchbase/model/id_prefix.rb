@@ -18,6 +18,8 @@ module Couchbase
       end
 
       module ClassMethods
+        # FIXME Need to handle cases where there's no id, or we fail or 
+        # w/e
         def id_prefix
           name.underscore
         end
@@ -34,7 +36,6 @@ module Couchbase
           id.to_s.split(':').first
         end
 
-        # FIXME check and test
         def class_from_id(id)
           prefix_from_id(id).classify.constantize
         end

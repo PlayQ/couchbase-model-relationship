@@ -9,6 +9,10 @@ module Couchbase
 
         module ClassMethods
           def child(name)
+            # TODO This may get the full module path for a relationship name,
+            # and that will make the keys very long. Is this necessary? see: AR STI
+            name = name.to_s.underscore unless name.is_a?(String)
+
             (@_children ||= []).push name
 
             define_method("#{name}=") do |object|
@@ -26,29 +30,32 @@ module Couchbase
 
           # FIXME Need to support finding multiple instances with their own children
           # Without doing [id]x queries
-          def find_with_children(id, children = [])
-            children = children.blank? ? @_children : children
+          def find_with_children(id, *children)
+            effective_children = if children.blank?
+              @_children
+            else
+              children.select {|child| @_children.include?(child.to_s) }
+            end
 
-            child_ids = children.map {|child| child.classify.constantize.prefixed_id(id) }
+            child_ids = effective_children.map {|child| child.classify.constantize.prefixed_id(id) }
 
             results = bucket.get([id, *child_ids], quiet: true, extended: true)
 
-            #FIXME The data might be a string here, whereas with a single get it's a hash. Check
             parent_attributes = results.delete(id)
 
             if parent_attributes.nil?
-              # raise CB not found error
+              raise Couchbase::Error::NotFound.new("failed to get value (key=\"#{id}\"")
             end
 
-            parent = raw_new(parent_attributes)
-
-            results.each do |child_id, child_attributes|
-              parent.send("#{prefix_from_id child_id}=", class_from_id(child_id).raw_new(child_attributes))
+            raw_new(id, parent_attributes).tap do |parent|
+              results.each_pair do |child_id, child_attributes|
+                parent.send "#{prefix_from_id child_id}=", 
+                  class_from_id(child_id).raw_new(id, child_attributes)
+              end
             end
-              
           end
 
-          def raw_new(results)
+          def raw_new(id, results)
             obj, flags, cas = results
             obj = {:raw => obj} unless obj.is_a?(Hash)
             new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
