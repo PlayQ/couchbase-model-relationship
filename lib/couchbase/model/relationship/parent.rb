@@ -1,3 +1,8 @@
+# TODO Support for creating children with the ID populated
+# TODO Transparent child load if object not present (cache missing objects to reduce queries)
+# TODO Set 'parent' in child object to us, so there's not a query when we have the object
+# TODO Support for "required" children (if missing, error) ?
+# TODO Delete children when deleting ourself
 module Couchbase
   class Model
     module Relationship
@@ -5,6 +10,19 @@ module Couchbase
         extend ::ActiveSupport::Concern
         
         included do
+        end
+
+        # TODO How to handle failures saving children?
+        # ? Should this be the default?
+        def save_with_children(options = {})
+          save(options).tap do |result|
+            # FIXME That's icky. Is there a better way?
+            self.class.instance_variable_get(:@_children).each do |child_name|
+              if (child = send(child_name)).present?
+                child.save(options) if child.changed?
+              end
+            end
+          end
         end
 
         module ClassMethods
@@ -28,8 +46,6 @@ module Couchbase
             names.each {|name| child name }
           end
 
-          # FIXME Need to support finding multiple instances with their own children
-          # Without doing [id]x queries
           def find_with_children(id, *children)
             find_all_with_children(id, *children).first
           end

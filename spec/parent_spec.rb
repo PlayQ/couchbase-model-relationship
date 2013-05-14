@@ -40,7 +40,21 @@ describe "parent" do
     MultipleChildTest.new.should respond_to(:brother, :brother=, :sister, :sister=)
   end
 
-  describe ".find_with_children" do
+  it "saves dirty children if we want to save them" do
+    subject = MultipleChildTest.new
+    subject.brother = Brother.new
+    subject.brother.stubs(changed?: true)
+    subject.brother.expects(:save)
+    subject.sister = Sister.new
+    subject.sister.stubs(changed?: false)
+    subject.sister.expects(:save).never
+
+    subject.stubs(save: :saved)
+
+    subject.save_with_children.should eq(:saved)
+  end
+
+  describe "finding objects with children" do
     subject { ParentTest }
     let(:bucket) { stub }
 

@@ -24,3 +24,4 @@ Couchbase::Model.send :include, Couchbase::Model::Attributes
 Couchbase::Model.send :include, Couchbase::Model::Dirty
 Couchbase::Model.send :include, Couchbase::Model::IdPrefix
 Couchbase::Model.send :include, Couchbase::Model::Relationship::Parent
+

@@ -7,6 +7,23 @@ require 'rspec/core'
 
 require 'couchbase/model/relationship'
 
+module RspecHelpers
+  def stub_instance(klass, stubs = {})
+    stub = stub(klass.name)
+    stub.responds_like_instance_of(klass)
+
+    stub.stubs(stubs) if stubs.present?
+
+    stub
+  end
+end
+
+
 RSpec.configure do |config|
   config.mock_framework = :mocha
+  config.include RspecHelpers
 end
+
+Mocha::Configuration.prevent :stubbing_non_existent_method
+Mocha::Configuration.prevent :stubbing_method_on_nil
+
