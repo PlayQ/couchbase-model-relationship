@@ -3,6 +3,9 @@ module Couchbase
     module Dirty
       extend ActiveSupport::Concern
 
+      # FIXME Pull in the deep cloning support from BB so that we can properly
+      # track changes to nested objects living in the value
+
       included do
         include ActiveModel::Dirty
 

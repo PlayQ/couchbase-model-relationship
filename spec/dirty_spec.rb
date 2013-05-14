@@ -1,13 +1,11 @@
 require 'spec_helper'
 
-describe "Dirty" do
-  let(:klass) do
-    Class.new(Couchbase::Model) do
-      attribute :name
-    end
-  end
+class DirtyTest < Couchbase::Model
+  attribute :name
+end
 
-  subject { klass.new }
+describe "Dirty" do
+  subject { DirtyTest.new }
 
   it "should mark the fields as dirty" do
     subject.name = 'abc'
