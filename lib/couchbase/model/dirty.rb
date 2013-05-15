@@ -31,6 +31,11 @@ module Couchbase
         end
       end
 
+      # FIXME Return value for "Fail" and "didn't try" is the same
+      def save_if_changed(options = {})
+        save if changed?
+      end
+
       private
       def capture_previous_changes
         @previously_changed = changes

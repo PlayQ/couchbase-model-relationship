@@ -1,6 +1,7 @@
 require 'active_support/concern'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/string/inflections'
+require 'active_support/core_ext/object/try'
 
 require 'active_model'
 
@@ -9,6 +10,7 @@ require 'couchbase/model'
 require 'couchbase/model/attributes'
 require 'couchbase/model/dirty'
 require 'couchbase/model/id_prefix'
+require 'couchbase/model/relationship/association'
 require 'couchbase/model/relationship/parent'
 require 'couchbase/model/relationship/child'
 

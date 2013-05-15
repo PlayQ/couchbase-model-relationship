@@ -58,6 +58,20 @@ describe "Dirty" do
   end
 
   describe "saving" do
+    it "doesn't saves if not changed on request" do
+      subject.stubs(changed?: false)
+      subject.expects(:save).never
+
+      subject.save_if_changed
+    end
+
+    it "saves if changed on request" do
+      subject.stubs(changed?: true)
+      subject.expects(:save)
+
+      subject.save_if_changed
+    end
+
     describe "successfully" do
       before do
         subject.stubs(save_without_dirty: true)

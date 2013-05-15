@@ -12,17 +12,29 @@ module Couchbase
         extend ::ActiveSupport::Concern
         
         included do
+          alias_method_chain :save, :autosave_children
         end
 
         # TODO How to handle failures saving children?
-        # ? Should this be the default?
         def save_with_children(options = {})
+          # Don't save if we failed
           save(options).tap do |result|
             children.each do |child|
-              child.save(options) if child.changed?
+              child.save_if_changed(options)
             end
           end
         end
+
+        def save_with_autosave_children(options = {})
+          # Don't save if we failed
+          save_without_autosave_children(options).tap do |result|
+            self.class.child_associations.select(&:auto_save).each do |association|
+              association.fetch(self).try :save_if_changed
+            end
+          end
+        end
+
+        # FIXME #changed? should include children if any are autosave
 
         def delete_with_children(options = {})
           children.each {|child| child.delete options }
@@ -31,18 +43,18 @@ module Couchbase
         end
 
         def children
-          self.class.instance_variable_get(:@_children).map do |child_name|
-            send(child_name)
+          self.class.child_associations.map do |association|
+            association.fetch self
           end.compact
         end
 
         module ClassMethods
-          def child(name)
+          def child(name, options = {})
             # TODO This may get the full module path for a relationship name,
             # and that will make the keys very long. Is this necessary? see: AR STI
             name = name.to_s.underscore unless name.is_a?(String)
 
-            (@_children ||= []).push name
+            (@_children ||= []).push Relationship::Association.new(name, options)
 
             define_method("#{name}=") do |object|
               # FIXME Sanity check. If parent and parent != self, error
@@ -65,7 +77,17 @@ module Couchbase
           end
 
           def children(*names)
-            names.each {|name| child name }
+            options = names.extract_options!
+
+            names.each {|name| child name, options }
+          end
+
+          def child_association_names
+            children.map(&:name)
+          end
+
+          def child_associations
+            @_children ||[]
           end
 
           def find_with_children(id, *children)
@@ -78,13 +100,14 @@ module Couchbase
             effective_children = if children.blank?
               @_children
             else
-              children.select {|child| @_children.include?(child.to_s) }
+              children = children.map(&:to_s)
+              @_children.select {|child| children.include?(child.name) }
             end
             
             search_ids = ids.dup
             ids.each do |id|
               search_ids.concat(effective_children.map do |child| 
-                child.classify.constantize.prefixed_id(id)
+                child.child_class.prefixed_id(id)
               end)
             end
 

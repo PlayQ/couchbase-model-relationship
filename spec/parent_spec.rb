@@ -20,6 +20,13 @@ class ParentTest < Couchbase::Model
   child :child
 end
 
+class AutoSaveTest < Couchbase::Model
+  attribute :name
+
+  child :child, auto_save: true
+  child :brother, auto_save: false
+end
+
 class MultipleChildTest < Couchbase::Model
   children :brother, :sister
 end
@@ -56,6 +63,19 @@ describe "parent" do
     subject.stubs(save: :saved)
 
     subject.save_with_children.should eq(:saved)
+  end
+
+  it "auto-saves children marked as autosaved" do
+    subject = AutoSaveTest.new name: "Test"
+    subject.child = Child.new age: 5
+    subject.brother = Brother.new
+
+    subject.stubs(save_without_autosave_children: true)
+
+    subject.child.expects(:save_if_changed)
+    subject.brother.expects(:save_if_changed).never
+
+    subject.save
   end
 
   it "deletes children when we're deleted" do
