@@ -13,6 +13,7 @@ module Couchbase
         
         included do
           alias_method_chain :save, :autosave_children
+          alias_method_chain :delete, :autodelete_children
         end
 
         # TODO How to handle failures saving children?
@@ -29,9 +30,17 @@ module Couchbase
           # Don't save if we failed
           save_without_autosave_children(options).tap do |result|
             self.class.child_associations.select(&:auto_save).each do |association|
-              association.fetch(self).try :save_if_changed
+              association.fetch(self).try :save_if_changed, options
             end
           end
+        end
+
+        def delete_with_autodelete_children(options = {})
+          self.class.child_associations.select(&:auto_delete).each do |association|
+            association.fetch(self).try :delete, options
+          end
+
+          delete_without_autodelete_children(options)
         end
 
         # FIXME #changed? should include children if any are autosave

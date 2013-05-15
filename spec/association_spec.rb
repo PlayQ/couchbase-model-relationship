@@ -12,6 +12,11 @@ describe "associations" do
     subject.new('abc').auto_save.should be_false
   end
 
+  it "sets autodelete properly" do
+    subject.new('abc', auto_delete: true).auto_delete.should be_true
+    subject.new('abc').auto_delete.should be_false
+  end
+
   it "fetches the object from the parent" do
     parent = stub(abc: :object)
 
