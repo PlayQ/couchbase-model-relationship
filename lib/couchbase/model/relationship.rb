@@ -7,6 +7,7 @@ require 'active_model'
 
 require "couchbase/model/relationship/version"
 require 'couchbase/model'
+require 'couchbase/model/deep_copier'
 require 'couchbase/model/attributes'
 require 'couchbase/model/dirty'
 require 'couchbase/model/id_prefix'

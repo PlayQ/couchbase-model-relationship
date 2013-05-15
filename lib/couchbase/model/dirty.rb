@@ -3,10 +3,9 @@ module Couchbase
   class Model
     module Dirty
       extend ActiveSupport::Concern
+      include ActiveModel::Dirty
 
       included do
-        include ActiveModel::Dirty
-
         remove_method :write_attribute
 
         alias_method_chain :save, :dirty
@@ -46,6 +45,15 @@ module Couchbase
         @changed_attributes.clear
       end
 
+      def attribute_will_change!(attr)
+        begin
+          value = __send__(attr)
+          value = DeepCopier.new(value).copy
+        rescue TypeError, NoMethodError
+        end
+
+        changed_attributes[attr] = value
+      end
 
     end
   end

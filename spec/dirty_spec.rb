@@ -2,6 +2,7 @@ require 'spec_helper'
 
 class DirtyTest < Couchbase::Model
   attribute :name
+  attribute :complex
 end
 
 describe "Dirty" do
@@ -10,6 +11,21 @@ describe "Dirty" do
   it "should mark the fields as dirty" do
     subject.name = 'abc'
     subject.should be_name_changed
+  end
+
+  it "should mark complex fields" do
+    inner = []
+    outer = [inner]
+
+    subject.complex = outer
+    subject.send :clean!
+
+    subject.complex_will_change!
+    subject.complex[0].push 'abc'
+
+    subject.should be_complex_changed
+    subject.complex.should eq([['abc']])
+    subject.complex_was.should eq([[]])
   end
 
   it "should not mark the field dirty when the value is the same" do
