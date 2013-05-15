@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["jon@burningbush.us"]
   spec.description   = %q{Closely bound relationships for Couchbase::Model}
   spec.summary       = %q{Supports relationships that are fetched and saved with a root model}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/jmoses/couchbase-model-relationship"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

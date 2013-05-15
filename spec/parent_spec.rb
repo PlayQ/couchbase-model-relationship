@@ -58,6 +58,18 @@ describe "parent" do
     subject.save_with_children.should eq(:saved)
   end
 
+  it "deletes children when we're deleted" do
+    subject = MultipleChildTest.new
+    subject.brother = Brother.new
+    subject.brother.expects(:delete)
+    subject.sister = Sister.new
+    subject.sister.expects(:delete)
+
+    subject.stubs(delete: :deleted)
+
+    subject.delete_with_children.should eq(:deleted)
+  end
+
   it "builds a new object properly" do
     subject.id = "parent_test:123"
     child = subject.build_child age: 6

@@ -4,6 +4,7 @@
 # TODO Transparent child load if object not present (cache missing objects to reduce queries)
 # TODO Support for "required" children (if missing, error) ?
 # TODO Delete children when deleting ourself
+# TODO Use multi-set to batch save parent + children
 module Couchbase
   class Model
     module Relationship
@@ -17,13 +18,22 @@ module Couchbase
         # ? Should this be the default?
         def save_with_children(options = {})
           save(options).tap do |result|
-            # FIXME That's icky. Is there a better way?
-            self.class.instance_variable_get(:@_children).each do |child_name|
-              if (child = send(child_name)).present?
-                child.save(options) if child.changed?
-              end
+            children.each do |child|
+              child.save(options) if child.changed?
             end
           end
+        end
+
+        def delete_with_children(options = {})
+          children.each {|child| child.delete options }
+
+          delete(options)
+        end
+
+        def children
+          self.class.instance_variable_get(:@_children).map do |child_name|
+            send(child_name)
+          end.compact
         end
 
         module ClassMethods
