@@ -3,7 +3,6 @@
 #
 # TODO Transparent child load if object not present (cache missing objects to reduce queries)
 # TODO Support for "required" children (if missing, error) ?
-# TODO Delete children when deleting ourself
 # TODO Use multi-set to batch save parent + children
 module Couchbase
   class Model
