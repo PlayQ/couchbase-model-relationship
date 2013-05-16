@@ -17,6 +17,10 @@ describe "associations" do
     subject.new('abc').auto_delete.should be_false
   end
 
+  it "uses the provide class name" do
+    subject.new('abc', class_name: "String").child_klass.should eq('String')
+  end
+
   it "fetches the object from the parent" do
     parent = stub(abc: :object)
 
