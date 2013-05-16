@@ -23,6 +23,10 @@ module Couchbase
         def child_class
           child_klass.constantize
         end
+
+        def prefix
+          child_class.id_prefix
+        end
       end
     end
   end

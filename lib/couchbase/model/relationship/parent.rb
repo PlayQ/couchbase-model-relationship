@@ -62,7 +62,7 @@ module Couchbase
             # and that will make the keys very long. Is this necessary? see: AR STI
             name = name.to_s.underscore unless name.is_a?(String)
 
-            (@_children ||= []).push Relationship::Association.new(name, options)
+            (@_children ||= []).push (assoc = Relationship::Association.new(name, options))
 
             define_method("#{name}=") do |object|
               # FIXME Sanity check. If parent and parent != self, error
@@ -76,9 +76,7 @@ module Couchbase
             end
 
             define_method("build_#{name}") do |attributes = {}|
-              child_class = name.classify.constantize
-
-              send("#{name}=", child_class.new(attributes)).tap do |child|
+              send("#{name}=", assoc.child_class.new(attributes)).tap do |child|
                 child.parent = self
               end
             end
@@ -95,7 +93,7 @@ module Couchbase
           end
 
           def child_associations
-            @_children ||[]
+            @_children || []
           end
 
           def find_with_children(id, *children)
@@ -132,8 +130,9 @@ module Couchbase
             parent_objects.each do |parent|
               results.each do |child_id, child_attributes|
                 if unprefixed_id(parent.id) == unprefixed_id(child_id) 
-                  parent.send "#{prefix_from_id child_id}=", 
-                    class_from_id(child_id).raw_new(child_id, child_attributes)
+                  assoc = effective_children.detect {|assoc| assoc.prefix == prefix_from_id(child_id) }
+                  parent.send "#{assoc.name}=", 
+                    assoc.child_class.raw_new(child_id, child_attributes)
                 end
               end
             end
