@@ -100,6 +100,7 @@ module Couchbase
             find_all_with_children(id, *children).first
           end
 
+          # FIXME This is a horrible abortion of a method
           def find_all_with_children(ids, *children)
             ids = Array(ids)
 

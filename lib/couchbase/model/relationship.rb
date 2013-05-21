@@ -9,6 +9,7 @@ require "couchbase/model/relationship/version"
 require 'couchbase/model'
 require 'couchbase/model/deep_copier'
 require 'couchbase/model/attributes'
+require 'couchbase/model/complex_attributes'
 require 'couchbase/model/dirty'
 require 'couchbase/model/id_prefix'
 require 'couchbase/model/relationship/association'
@@ -25,6 +26,7 @@ end
 # Setup code
 
 Couchbase::Model.send :include, Couchbase::Model::Attributes
+Couchbase::Model.send :include, Couchbase::Model::ComplexAttributes
 Couchbase::Model.send :include, Couchbase::Model::Dirty
 Couchbase::Model.send :include, Couchbase::Model::IdPrefix
 Couchbase::Model.send :include, Couchbase::Model::Relationship::Parent

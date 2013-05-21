@@ -13,10 +13,7 @@ module Couchbase
 
       module ClassMethods
         def attribute(*names)
-          options = {}
-          if names.last.is_a?(Hash)
-            options = names.pop
-          end
+          options = names.extract_options!
 
           names.each do |name|
             name = name.to_s
