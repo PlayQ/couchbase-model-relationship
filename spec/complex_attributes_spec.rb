@@ -21,7 +21,7 @@ class ComplexTest < Couchbase::Model
   end
 
   attribute :array, default: []
-  array_attribute :array
+  array_attribute :array, class_name: ComplexTest::Child.name
 end
 
 describe "complex attributes" do
@@ -42,6 +42,10 @@ describe "complex attributes" do
       subject.array.all? {|c| ComplexTest::Child === c }.should be_true
 
       subject.array.map(&:name).should eq(%w(abc exist))
+    end
+  
+    it "knows what class it stores" do
+      ComplexTest.array_attribute_class(:array).should eq("ComplexTest::Child") 
     end
   end
 end
