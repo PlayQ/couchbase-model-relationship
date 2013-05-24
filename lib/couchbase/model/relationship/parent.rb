@@ -62,7 +62,7 @@ module Couchbase
             # and that will make the keys very long. Is this necessary? see: AR STI
             name = name.to_s.underscore unless name.is_a?(String)
 
-            (@_children ||= []).push (assoc = Relationship::Association.new(name, options))
+            (@_children ||= []).push Relationship::Association.new(name, options)
 
             define_method("#{name}=") do |object|
               # FIXME Sanity check. If parent and parent != self, error
@@ -71,11 +71,39 @@ module Couchbase
               instance_variable_set :"@_child_#{name}", object
             end
 
+            define_method("#{name}_loaded?") do
+              instance_variable_get("@_child_#{name}_loaded")
+            end
+
+            define_method("#{name}_loaded!") do
+              instance_variable_set("@_child_#{name}_loaded", true)
+            end
+            protected "#{name}_loaded!".to_sym
+
             define_method("#{name}") do
-              instance_variable_get :"@_child_#{name}"
+              # DO NOT USE Association#fetch IN THIS METHOD
+              base_var_name = "@_child_#{name}"
+
+              if (existing = instance_variable_get(base_var_name)).present?
+                existing
+              else
+                if send("#{name}_loaded?")
+                  send("build_#{name}")
+                else
+                  assoc = self.class.child_association_for(name)
+                  send("#{name}_loaded!")
+
+                  if (unloaded = assoc.load(self)).present?
+                    send("#{name}=", unloaded)
+                  end
+
+                  send(name)
+                end
+              end
             end
 
             define_method("build_#{name}") do |attributes = {}|
+              assoc = self.class.child_association_for(name)
               send("#{name}=", assoc.child_class.new(attributes)).tap do |child|
                 child.parent = self
               end
@@ -94,6 +122,10 @@ module Couchbase
 
           def child_associations
             @_children || []
+          end
+
+          def child_association_for(name)
+            @_children.detect {|association| association.name == name.to_s }
           end
 
           def find_with_children(id, *children)
@@ -136,6 +168,8 @@ module Couchbase
                     assoc.child_class.raw_new(child_id, child_attributes)
                 end
               end
+
+              effective_children.each {|assoc| parent.send("#{assoc.name}_loaded!") }
             end
           end
 

@@ -16,6 +16,12 @@ module Couchbase
           parent.send(name)
         end
 
+        def load(parent)
+          child_id = child_class.prefixed_id(parent.id)
+
+          child_class.find_by_id(child_id)
+        end
+
         def child_klass
           @class_name || name.classify
         end

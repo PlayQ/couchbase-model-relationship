@@ -27,6 +27,18 @@ describe "associations" do
     subject.new("abc").fetch(parent).should eq(:object)
   end
 
+  it "loads the object from the database" do
+    child_class = stub_klass(Couchbase::Model)
+    child_class.expects(:prefixed_id).with('core/user:abc123').returns(:id)
+    child_class.expects(:find_by_id).with(:id).returns(:child)
+
+    parent = stub(id: "core/user:abc123")
+    instance = subject.new("string")
+    instance.stubs(child_class: child_class)
+
+    instance.load(parent).should eq(:child)
+  end
+
   it "knows the child class name" do
     subject.new("string").child_klass.should eq("String")
   end

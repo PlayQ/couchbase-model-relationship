@@ -12,7 +12,14 @@ module RspecHelpers
     stub = stub(klass.name)
     stub.responds_like_instance_of(klass)
 
-    stub.stubs(stubs) if stubs.present?
+    stub.stubs(stubs) if stubs && ! stubs.empty?
+
+    stub
+  end
+
+  def stub_klass(klass)
+    stub = stub(klass.name)
+    stub.responds_like(klass)
 
     stub
   end

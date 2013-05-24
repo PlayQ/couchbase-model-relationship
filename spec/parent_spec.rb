@@ -42,9 +42,34 @@ describe "parent" do
     subject.should respond_to(:child)
   end
 
-  it "sets and gets the value properly" do
-    subject.child = (brother = Brother.new)
-    subject.child.should eq(brother)
+  context "the getter" do
+    let(:association) { ParentTest.child_association_for :child }
+
+    it "returns the value is present" do
+      subject.child = (brother = Brother.new)
+      subject.child.should eq(brother)
+    end
+
+    it "tries to load from the db if not loaded" do
+      subject.expects(:build_child).never
+      association.expects(:load).returns((child = Child.new)).once
+
+      subject.child.should eq(child)
+      subject.child.should eq(child)
+    end
+
+    it "builds a new child if child doesn't exist in the db" do
+      association.expects(:load).returns(nil).once
+
+      subject.child.should be_a(Child)
+      subject.child.should be_a(Child)
+    end
+  end
+
+  it "knows if the child is loaded or not" do
+    subject.should_not be_child_loaded
+    subject.send :child_loaded!
+    subject.should be_child_loaded
   end
 
   it "handles multiple children" do
@@ -185,6 +210,20 @@ describe "parent" do
       expect { subject.find_with_children("parent:1") }.to raise_error(Couchbase::Error::NotFound)
     end
 
+    it "marks all children as loaded even if they're not found" do
+      bucket.expects(:get).with(
+        ["parent:1", "child:1"],
+        quiet: true,
+        extended: true
+      ).returns({
+        "parent:1" => [{name: "abc"}, 0, :cas],
+      })
+
+      parent = subject.find_with_children("parent:1")
+      parent.should be_child_loaded
+      parent.child.should be_new
+    end
+
     it "doesn't raise an error when the child object isn't found" do
       bucket.expects(:get).with(
         ["parent:1", "child:1"],
@@ -196,7 +235,6 @@ describe "parent" do
 
       parent = subject.find_with_children("parent:1")
       parent.name.should eq("abc")
-      parent.child.should be_nil
     end
   end
 end
