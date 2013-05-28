@@ -6,11 +6,14 @@ module Couchbase
       module ClassMethods
         def array_attribute(*names)
           options = names.extract_options!
+          class_name = options.delete(:class_name)
 
           names.each do |name|
             name = name.to_s
 
-            (@_array_attributes ||= {})[name] = options[:class_name]
+            (@_array_attributes ||= {})[name] = class_name
+
+            attribute name, {default: proc { [] }}.merge(options)
 
             define_method("#{name}=") do |values|
               actual_values = values.map do |value|

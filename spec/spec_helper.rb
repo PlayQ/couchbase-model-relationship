@@ -8,11 +8,12 @@ require 'rspec/core'
 require 'couchbase/model/relationship'
 
 module RspecHelpers
-  def stub_instance(klass, stubs = {})
+  def stub_instance(klass, stubs = {}, mocks = {})
     stub = stub(klass.name)
     stub.responds_like_instance_of(klass)
 
     stub.stubs(stubs) if stubs && ! stubs.empty?
+    stub.mocks(mocks) if mocks && ! mocks.empty?
 
     stub
   end

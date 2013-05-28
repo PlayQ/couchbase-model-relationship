@@ -20,7 +20,6 @@ class ComplexTest < Couchbase::Model
     end
   end
 
-  attribute :array, default: []
   array_attribute :array, class_name: ComplexTest::Child.name
 end
 
@@ -46,6 +45,10 @@ describe "complex attributes" do
   
     it "knows what class it stores" do
       ComplexTest.array_attribute_class(:array).should eq("ComplexTest::Child") 
+    end
+
+    it "defaults to an array" do
+      ComplexTest.new.array.should be_a(Array)
     end
   end
 end

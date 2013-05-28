@@ -66,6 +66,13 @@ describe "parent" do
     end
   end
 
+  it "can reload itself and all it's children" do
+    subject.child = stub(reload: true)
+    subject.expects(:reload)
+
+    subject.reload_all
+  end
+
   it "knows if the child is loaded or not" do
     subject.should_not be_child_loaded
     subject.send :child_loaded!

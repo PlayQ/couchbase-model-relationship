@@ -56,6 +56,11 @@ module Couchbase
           end.compact
         end
 
+        def reload_all
+          children.each(&:reload)
+          reload
+        end
+
         module ClassMethods
           def child(name, options = {})
             # TODO This may get the full module path for a relationship name,
@@ -66,7 +71,7 @@ module Couchbase
 
             define_method("#{name}=") do |object|
               # FIXME Sanity check. If parent and parent != self, error
-              object.parent = self
+              object.parent = self if object.respond_to?(:parent)
 
               instance_variable_set :"@_child_#{name}", object
             end
