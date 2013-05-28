@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activemodel', '~> 3'
   spec.add_dependency 'activesupport', '~> 3'
   spec.add_dependency 'couchbase', '~> 1.2.3'
-  spec.add_dependency 'couchbase-model', '~> 0.5.2'
+  #spec.add_dependency 'couchbase-model', '~> 0.5.2'
   spec.add_dependency 'json', '~> 1.7.7'
 
   spec.add_development_dependency "bundler", "~> 1.3"

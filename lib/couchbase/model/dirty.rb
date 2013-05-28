@@ -10,6 +10,19 @@ module Couchbase
 
         alias_method_chain :save, :dirty
         alias_method_chain :create, :dirty
+
+        class << self
+          alias_method_chain :_find, :cleaning
+        end
+      end
+
+      module ClassMethods
+        # If we're just loaded from the database, we're not dirty
+        def _find_with_cleaning(quiet, *ids)
+          _find_without_cleaning(quiet, *ids).tap do |results|
+            Array(results).each {|instance| instance.send :clean! }
+          end
+        end
       end
 
       def write_attribute(name, value)
@@ -42,7 +55,7 @@ module Couchbase
       end
 
       def clean!
-        @changed_attributes.clear
+        @changed_attributes.clear if changed?
       end
 
       def attribute_will_change!(attr)

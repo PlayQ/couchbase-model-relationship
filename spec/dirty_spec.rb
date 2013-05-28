@@ -37,6 +37,13 @@ describe "Dirty" do
     subject.should_not be_name_changed
   end
 
+  it "doesn't mark any fields as dirty when the model is loaded" do
+    DirtyTest.stubs(bucket: stub)
+    DirtyTest.bucket.expects(:get).with(['abc123'], quiet: false, extended: true).returns({'name' => "Bob"}, {}, 123)
+
+    DirtyTest.find('abc123').should_not be_changed
+  end
+
   describe "creating" do
     describe "successfully" do
       before do
