@@ -12,7 +12,7 @@ module Couchbase
       end
 
       def create_with_id_prefix(options = {})
-        @id ||= prefixed_id(Couchbase::Model::UUID.generator.next(1, model.thread_storage[:uuid_algorithm]))
+        @id ||= model.next_prefixed_id
 
         create_without_id_prefix(options)
       end
@@ -22,6 +22,10 @@ module Couchbase
         # w/e
         def id_prefix
           name.underscore
+        end
+
+        def next_prefixed_id
+          prefixed_id(Couchbase::Model::UUID.generator.next(1, thread_storage[:uuid_algorithm]))
         end
 
         def prefixed_id(id)
