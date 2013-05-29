@@ -12,10 +12,14 @@ module Couchbase
       end
 
       def create_with_id_prefix(options = {})
-        @id ||= model.next_prefixed_id
-
+        ensure_has_id
         create_without_id_prefix(options)
       end
+
+      def ensure_has_id
+        @id ||= model.next_prefixed_id
+      end
+      private :ensure_has_id
 
       module ClassMethods
         # FIXME Need to handle cases where there's no id, or we fail or 
