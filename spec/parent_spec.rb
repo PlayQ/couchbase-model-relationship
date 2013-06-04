@@ -18,6 +18,7 @@ class ParentTest < Couchbase::Model
   attribute :name
 
   child :child
+  child :dont_load, auto_load: false
 end
 
 class AutoSaveTest < Couchbase::Model
@@ -68,6 +69,7 @@ describe "parent" do
 
   it "can reload itself and all it's children" do
     subject.child = stub(reload: true)
+    subject.dont_load = stub(reload: true)
     subject.expects(:reload)
 
     subject.reload_all

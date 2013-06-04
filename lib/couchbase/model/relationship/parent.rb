@@ -142,7 +142,7 @@ module Couchbase
             ids = Array(ids)
 
             effective_children = if children.blank?
-              @_children
+              @_children.select {|child| child.auto_load }
             else
               children = children.map(&:to_s)
               @_children.select {|child| children.include?(child.name) }

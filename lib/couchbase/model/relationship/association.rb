@@ -3,13 +3,14 @@ module Couchbase
     module Relationship
       class Association
         attr_accessor :name
-        attr_reader :auto_save, :auto_delete, :class_name
+        attr_reader :auto_save, :auto_delete, :auto_load, :class_name
 
         def initialize(name, options = {})
           self.name = name.to_s
           @auto_save = options[:auto_save]
           @auto_delete = options[:auto_delete]
           @class_name = options[:class_name]
+          @auto_load = options.key?(:auto_load) ? options[:auto_load] : true
         end
 
         def fetch(parent)
