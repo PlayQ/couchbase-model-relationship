@@ -11,6 +11,8 @@ module Couchbase
         alias_method_chain :save, :dirty
         alias_method_chain :create, :dirty
 
+        attribute_method_prefix :previous_
+
         class << self
           alias_method_chain :_find, :cleaning
         end
@@ -56,6 +58,10 @@ module Couchbase
 
       def clean!
         @changed_attributes.clear if changed?
+      end
+
+      def previous_attribute(attr)
+        previous_changes[attr.to_s].try :first
       end
 
       def attribute_will_change!(attr)

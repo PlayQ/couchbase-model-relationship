@@ -107,6 +107,7 @@ describe "Dirty" do
         subject.name.should eq("save")
         subject.should_not be_name_changed
         subject.previous_changes['name'].should eq([nil, 'save'])
+        subject.previous_name.should eq(nil)
       end
 
       it "clears current changes" do
