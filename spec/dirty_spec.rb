@@ -77,6 +77,10 @@ describe "Dirty" do
       it "doesn't clear current changes" do
         subject.changed.should eq(["name"]) 
       end
+
+      it "doesn't have a previous change" do
+        subject.previous_name.should be_nil
+      end
     end
   end
 

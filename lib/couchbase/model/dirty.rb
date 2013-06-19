@@ -61,6 +61,8 @@ module Couchbase
       end
 
       def previous_attribute(attr)
+        return unless previous_changes
+
         previous_changes[attr.to_s].try :first
       end
 
