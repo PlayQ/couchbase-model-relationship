@@ -22,7 +22,10 @@ class ParentTest < Couchbase::Model
 end
 
 class AutoSaveTest < Couchbase::Model
+  include ActiveModel::Validations
+
   attribute :name
+  validates_length_of :name, maximum: 5
 
   child :child, auto_save: true
   child :brother, auto_delete: true
@@ -30,6 +33,14 @@ end
 
 class MultipleChildTest < Couchbase::Model
   children :brother, :sister
+end
+
+class InvalidTest < Couchbase::Model
+  include ActiveModel::Validations
+
+  attribute :name
+  validates_length_of :name, maximum: 5
+  child :brother
 end
 
 describe "parent" do
@@ -99,6 +110,17 @@ describe "parent" do
     subject.save_with_children.should eq(:saved)
   end
 
+  it "doesn't save children if the main object isn't valid" do
+    subject = InvalidTest.new
+    subject.brother = Brother.new
+    subject.brother.stubs(changed?: true)
+    subject.brother.expects(:save).never
+
+    subject.name = "123456"
+
+    subject.save_with_children
+  end
+
   it "auto-saves children marked as autosaved" do
     subject = AutoSaveTest.new name: "Test"
     subject.child = Child.new age: 5
@@ -107,6 +129,17 @@ describe "parent" do
     subject.stubs(save_without_autosave_children: true)
 
     subject.child.expects(:save_if_changed)
+    subject.brother.expects(:save_if_changed).never
+
+    subject.save
+  end
+
+  it "doesn't auto-save children if we fail to save" do
+    subject = AutoSaveTest.new name: "Test abc"
+    subject.child = Child.new age: 5
+    subject.brother = Brother.new
+
+    subject.child.expects(:save_if_changed).never
     subject.brother.expects(:save_if_changed).never
 
     subject.save

@@ -17,10 +17,11 @@ module Couchbase
 
         # TODO How to handle failures saving children?
         def save_with_children(options = {})
-          # Don't save if we failed
           save(options).tap do |result|
-            children.each do |child|
-              child.save_if_changed(options)
+            if result
+              children.each do |child|
+                child.save_if_changed(options)
+              end
             end
           end
         end
@@ -28,8 +29,10 @@ module Couchbase
         def save_with_autosave_children(options = {})
           # Don't save if we failed
           save_without_autosave_children(options).tap do |result|
-            self.class.child_associations.select(&:auto_save).each do |association|
-              association.fetch(self).try :save_if_changed, options
+            if result
+              self.class.child_associations.select(&:auto_save).each do |association|
+                association.fetch(self).try :save_if_changed, options
+              end
             end
           end
         end
