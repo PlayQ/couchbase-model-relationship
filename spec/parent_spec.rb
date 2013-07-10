@@ -92,6 +92,12 @@ describe "parent" do
     subject.should be_child_loaded
   end
 
+  it "marks the child loaded when set" do
+    subject.should_not be_child_loaded
+    subject.child = Child.new
+    subject.should be_child_loaded
+  end
+
   it "handles multiple children" do
     MultipleChildTest.new.should respond_to(:brother, :brother=, :sister, :sister=)
   end
@@ -177,6 +183,14 @@ describe "parent" do
     child.should eq(subject.child)
     child.age.should eq(6)
     child.parent.should eq(subject)
+  end
+
+  it "returns the loaded children" do
+    subject = MultipleChildTest.new
+
+    subject.brother = brother = Brother.new
+
+    subject.loaded_children.should eq([brother])
   end
 
   describe "finding objects with children" do

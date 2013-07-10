@@ -13,6 +13,10 @@ module Couchbase
           @auto_load = options.key?(:auto_load) ? options[:auto_load] : true
         end
 
+        def loaded?(parent)
+          parent.send("#{name}_loaded?")
+        end
+
         def fetch(parent)
           parent.send(name)
         end

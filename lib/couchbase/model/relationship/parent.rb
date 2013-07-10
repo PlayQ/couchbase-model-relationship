@@ -59,6 +59,12 @@ module Couchbase
           end.compact
         end
 
+        def loaded_children
+          self.class.child_associations.map do |association|
+            association.fetch(self) if association.loaded?(self)
+          end.compact
+        end
+
         def reload_all
           children.each(&:reload)
           reload
@@ -76,6 +82,8 @@ module Couchbase
               # FIXME Sanity check. If parent and parent != self, error
               object.parent = self if object.respond_to?(:parent)
 
+              # Mark as loaded when we use the setter
+              send("#{name}_loaded!")
               instance_variable_set :"@_child_#{name}", object
             end
 
