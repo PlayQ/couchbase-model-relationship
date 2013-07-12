@@ -213,7 +213,10 @@ describe "parent" do
 
       parent = subject.find_with_children("parent:1")
       parent.name.should eq("abc")
+      parent.should_not be_changed
+
       parent.child.age.should eq(5)
+      parent.child.should_not be_changed
     end
 
     it "finds and returns all the proper objects" do
