@@ -29,7 +29,11 @@ module Couchbase
         end
 
         def next_prefixed_id
-          prefixed_id(Couchbase::Model::UUID.generator.next(1, thread_storage[:uuid_algorithm]))
+          prefixed_id(next_unprefixed_id)
+        end
+
+        def next_unprefixed_id
+          Couchbase::Model::UUID.generator.next(1, thread_storage[:uuid_algorithm])
         end
 
         def prefixed_id(id)
@@ -37,15 +41,19 @@ module Couchbase
         end
 
         def unprefixed_id(id)
-          id.to_s.split(':').last
+          id_parts(id).last
         end
 
         def prefix_from_id(id)
-          id.to_s.split(':').first
+          id_parts(id).first
         end
 
         def class_from_id(id)
           prefix_from_id(id).classify.constantize
+        end
+
+        def id_parts(id)
+          id.to_s.split(':')
         end
       end
     end
