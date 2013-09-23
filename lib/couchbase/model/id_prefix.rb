@@ -11,6 +11,10 @@ module Couchbase
         self.class.prefixed_id(id)
       end
 
+      def unprefixed_id
+        self.class.unprefixed_id(self.id)
+      end
+
       def create_with_id_prefix(options = {})
         ensure_has_id
         create_without_id_prefix(options)

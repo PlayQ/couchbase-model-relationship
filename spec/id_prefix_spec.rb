@@ -6,6 +6,12 @@ end
 describe "IdPrefix" do
   subject { IdPrefixTest.new }
 
+  it "unprefixes it's own id" do
+    subject.send(:ensure_has_id)
+
+    subject.unprefixed_id.should eq(subject.id.split(':').last)
+  end
+
   it "knows the proper prefix" do
     subject.class.id_prefix.should eq("id_prefix_test")
   end
