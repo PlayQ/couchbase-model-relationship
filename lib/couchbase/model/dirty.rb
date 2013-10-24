@@ -57,7 +57,8 @@ module Couchbase
       end
 
       def clean!
-        @changed_attributes.clear if changed?
+        @changed_attributes.try(:clear)
+        @previously_changed.try(:clear)
       end
 
       def previous_attribute(attr)
