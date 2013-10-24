@@ -7,6 +7,7 @@ module Couchbase
 
       included do
         remove_method :write_attribute
+        remove_method :reload
 
         alias_method_chain :save, :dirty
         alias_method_chain :create, :dirty
@@ -31,6 +32,16 @@ module Couchbase
         send "#{name}_will_change!" unless send(name) == value
 
         @_attributes[name] = value
+      end
+
+      # This is until my change http://review.couchbase.org/#/c/29745/ is in
+      # and released.
+      def reload
+        raise Couchbase::Error::MissingId, 'missing id attribute' unless @id
+        pristine = model.find(@id)
+        update_attributes(pristine.attributes)
+        @meta[:cas] = pristine.meta[:cas]
+        self
       end
 
       def save_with_dirty(options = {})
