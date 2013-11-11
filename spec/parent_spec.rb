@@ -21,6 +21,9 @@ class ParentTest < Couchbase::Model
   child :dont_load, auto_load: false
 end
 
+class InheritanceTest < ParentTest
+end
+
 class AutoSaveTest < Couchbase::Model
   include ActiveModel::Validations
 
@@ -52,6 +55,10 @@ describe "parent" do
 
   it "has a getter" do
     subject.should respond_to(:child)
+  end
+
+  it "passes on it's children" do
+    InheritanceTest.child_association_names.should eq(ParentTest.child_association_names)
   end
 
   context "the getter" do

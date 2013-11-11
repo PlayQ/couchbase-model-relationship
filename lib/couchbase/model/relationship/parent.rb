@@ -71,6 +71,12 @@ module Couchbase
         end
 
         module ClassMethods
+          def inherited(base)
+            base.class_eval do
+              @_children = child_associations
+            end
+          end
+
           def child(name, options = {})
             # TODO This may get the full module path for a relationship name,
             # and that will make the keys very long. Is this necessary? see: AR STI
