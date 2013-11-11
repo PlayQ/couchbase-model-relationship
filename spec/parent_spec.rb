@@ -57,8 +57,16 @@ describe "parent" do
     subject.should respond_to(:child)
   end
 
-  it "passes on it's children" do
-    InheritanceTest.child_association_names.should eq(ParentTest.child_association_names)
+  context "being inherited" do
+    it "passes on it's children" do
+      InheritanceTest.child_association_names.should eq(ParentTest.child_association_names)
+    end
+    
+    it "has the children work properly" do
+      Child.stubs(_find: nil)
+
+      InheritanceTest.new.child.should be_a(Child)
+    end
   end
 
   context "the getter" do

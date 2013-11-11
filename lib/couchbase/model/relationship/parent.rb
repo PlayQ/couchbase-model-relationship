@@ -72,8 +72,9 @@ module Couchbase
 
         module ClassMethods
           def inherited(base)
+            children = child_associations
             base.class_eval do
-              @_children = child_associations
+              @_children = children
             end
           end
 
