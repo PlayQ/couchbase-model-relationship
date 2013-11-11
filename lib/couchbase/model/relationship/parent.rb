@@ -74,7 +74,7 @@ module Couchbase
           def inherited(base)
             children = child_associations
             base.class_eval do
-              @_children = children
+              @_children = children.dup
             end
           end
 

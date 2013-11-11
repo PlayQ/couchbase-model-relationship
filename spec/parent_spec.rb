@@ -67,6 +67,19 @@ describe "parent" do
 
       InheritanceTest.new.child.should be_a(Child)
     end
+    
+    it "seperates the childs relationships" do
+      Sister.stubs(_find: nil)
+
+      InheritanceTest.class_eval do
+        child :sister
+      end
+
+      InheritanceTest.new.sister.should be_a(Sister)
+
+      puts ParentTest.child_association_names
+      ParentTest.child_association_names.should_not include('Sister')
+    end
   end
 
   context "the getter" do
