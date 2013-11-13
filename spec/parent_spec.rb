@@ -192,12 +192,13 @@ describe "parent" do
     subject.delete
   end
 
-  it "deletes children when we're deleted" do
+  it "deletes persisted children when we're deleted" do
     subject = MultipleChildTest.new
     subject.brother = Brother.new
     subject.brother.expects(:delete)
+    subject.brother.stubs(persisted?: true)
     subject.sister = Sister.new
-    subject.sister.expects(:delete)
+    subject.sister.expects(:delete).never
 
     subject.stubs(delete: :deleted)
 

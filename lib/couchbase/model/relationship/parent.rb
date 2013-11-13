@@ -48,7 +48,11 @@ module Couchbase
         # FIXME #changed? should include children if any are autosave
 
         def delete_with_children(options = {})
-          children.each {|child| child.delete options }
+          children.each do |child| 
+            if child.persisted?
+              child.delete options
+            end
+          end
 
           delete(options)
         end
