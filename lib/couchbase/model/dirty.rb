@@ -41,6 +41,7 @@ module Couchbase
         pristine = model.find(@id)
         update_attributes(pristine.attributes)
         @meta[:cas] = pristine.meta[:cas]
+        clean!
         self
       end
 

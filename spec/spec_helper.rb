@@ -139,9 +139,9 @@ module RspecHelpers
   end
 
   def stub_server(*klasses)
-    Thread.current['mock'] = start_mock
-    bucket = Couchbase.connect(:hostname => @mock.host, :port => @mock.port)
-    [Post, ValidPost, Brewery, Beer, Attachment].each do |model|
+    Thread.current['mock'] = mock = start_mock
+    bucket = Couchbase.connect(:hostname => mock.host, :port => mock.port)
+    klasses.each do |model|
       model.bucket = bucket
     end
     bucket
@@ -187,9 +187,9 @@ RSpec.configure do |config|
   config.mock_framework = :mocha
   config.include RspecHelpers
 
-  #config.after(:suite) do
-  #  stop_mock
-  #end
+  config.after(:suite) do
+    Thread.current['mock'].try :stop
+  end
 end
 
 Mocha::Configuration.prevent :stubbing_non_existent_method

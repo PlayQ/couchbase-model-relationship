@@ -84,6 +84,23 @@ describe "Dirty" do
     end
   end
 
+  describe "reloading" do
+    before do
+      stub_server DirtyTest
+    end
+
+    it "resets the dirty state" do
+      subject.name = 'abc'
+      subject.save
+
+      subject.name = 'def'
+      subject.should be_changed
+
+      subject.reload
+      subject.should_not be_changed
+    end
+  end
+
   describe "saving" do
     it "doesn't saves if not changed on request" do
       subject.stubs(changed?: false)
