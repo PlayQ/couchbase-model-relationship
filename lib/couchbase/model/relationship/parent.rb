@@ -37,6 +37,17 @@ module Couchbase
           end
         end
 
+        def children_changed?
+          changed_children.present?
+        end
+
+        def save_with_changed_children
+          save_if_changed
+          changed_children.each do |child|
+            child.respond_to?(:save_with_changed_children) ? child.save_with_changed_children : child.save_if_changed
+          end
+        end
+
         def delete_with_autodelete_children(options = {})
           self.class.child_associations.select(&:auto_delete).each do |association|
             association.fetch(self).try :delete, options
@@ -67,6 +78,12 @@ module Couchbase
           self.class.child_associations.map do |association|
             association.fetch(self) if association.loaded?(self)
           end.compact
+        end
+
+        def changed_children
+          loaded_children.select do |child|
+            child.changed? || (child.respond_to?(:children_changed?) ? child.children_changed? : nil)
+          end
         end
 
         def reload_all

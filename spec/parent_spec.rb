@@ -21,6 +21,10 @@ class ParentTest < Couchbase::Model
   child :dont_load, auto_load: false
 end
 
+class GrandParentTest < Couchbase::Model
+  child :multiple_child_test
+end
+
 class InheritanceTest < ParentTest
 end
 
@@ -142,6 +146,44 @@ describe "parent" do
     subject.stubs(save: :saved)
 
     subject.save_with_children.should eq(:saved)
+  end
+
+  context "with dirty children" do
+    it "knows if it's children are dirty" do
+      subject = MultipleChildTest.new
+      subject.brother = Brother.new
+      subject.brother.stubs(changed?: false)
+      subject.sister = Sister.new
+      subject.sister.stubs(changed?: true)
+
+      subject.changed_children.should eq([subject.sister])
+      subject.should be_children_changed
+    end
+
+    it "knows if it's grand children are dirty" do
+      subject = GrandParentTest.new
+      subject.multiple_child_test = MultipleChildTest.new
+      subject.multiple_child_test.brother = Brother.new
+      subject.multiple_child_test.brother.stubs(changed?: false)
+      subject.multiple_child_test.sister = Sister.new
+      subject.multiple_child_test.sister.stubs(changed?: true)
+
+      subject.changed_children.should eq([subject.multiple_child_test])
+      subject.should be_children_changed
+    end
+
+    it "saves all dirty objects" do
+      subject = GrandParentTest.new
+      subject.multiple_child_test = MultipleChildTest.new
+      subject.multiple_child_test.brother = Brother.new
+      subject.multiple_child_test.brother.stubs(changed?: false)
+      subject.multiple_child_test.brother.expects(:save).never
+      subject.multiple_child_test.sister = Sister.new
+      subject.multiple_child_test.sister.stubs(changed?: true)
+      subject.multiple_child_test.sister.expects(:save)
+
+      subject.save_with_changed_children
+    end
   end
 
   it "doesn't save children if the main object isn't valid" do
