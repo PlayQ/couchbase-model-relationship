@@ -16,6 +16,21 @@ describe "IdPrefix" do
     subject.class.id_prefix.should eq("id_prefix_test")
   end
 
+  it "caches the prefix" do
+    subject.class.instance_variable_set(:@_id_prefix, nil)
+    subject.class.id_prefix
+    subject.class.instance_variable_get(:@_id_prefix).should eq('id_prefix_test')
+  end
+
+  it "reads from the prefix cache" do
+    subject.class.instance_variable_set(:@_id_prefix, 'abc')
+    String.any_instance.expects(:underscore).never
+    subject.class.id_prefix.should eq('abc')
+
+    # Resetting
+    subject.class.instance_variable_set(:@_id_prefix, nil)
+  end
+
   it "prefixes an id properly" do
     subject.class.prefixed_id(123).should eq("id_prefix_test:123")
   end

@@ -219,10 +219,13 @@ module Couchbase
 
           def raw_new(id, results)
             obj, flags, cas = results
-            obj = {:raw => obj} unless obj.is_a?(Hash)
-            new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj)).tap do |instance|
-              instance.send :clean!
+            if obj.is_a?(Hash)
+              obj.merge!(:_ignore_dirty => true)
+            else
+              obj = {:raw => obj}
             end
+
+            new({:id => id, :meta => {'flags' => flags, 'cas' => cas}}.merge(obj))
           end
         end
       end

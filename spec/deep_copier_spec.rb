@@ -53,4 +53,6 @@ describe Couchbase::Model::DeepCopier do
     source.should_not eq(copy)
     copy.should eq({key: []})
   end
+
+
 end

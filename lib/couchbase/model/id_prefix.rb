@@ -29,7 +29,7 @@ module Couchbase
         # FIXME Need to handle cases where there's no id, or we fail or 
         # w/e
         def id_prefix
-          name.underscore
+          @_id_prefix ||= name.underscore
         end
 
         def next_prefixed_id

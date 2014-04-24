@@ -8,6 +8,22 @@ end
 describe "Dirty" do
   subject { DirtyTest.new }
 
+  describe "#update_attributes" do
+    it "doesn't mark dirty if ignoring" do
+      subject.update_attributes :_ignore_dirty => true, :name => 'abc'
+
+      subject.name.should eq('abc')
+      subject.should_not be_name_changed
+    end
+
+    it "marks dirty if not ignoring" do
+      subject.update_attributes :name => 'abc'
+
+      subject.name.should eq('abc')
+      subject.should be_name_changed
+    end
+  end
+
   it "should mark the fields as dirty" do
     subject.name = 'abc'
     subject.should be_name_changed

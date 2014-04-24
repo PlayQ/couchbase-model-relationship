@@ -11,6 +11,7 @@ module Couchbase
 
         alias_method_chain :save, :dirty
         alias_method_chain :create, :dirty
+        alias_method_chain :update_attributes, :dirty
 
         attribute_method_prefix :previous_
 
@@ -26,10 +27,11 @@ module Couchbase
             Array(results).each {|instance| instance.send :clean! }
           end
         end
+
       end
 
       def write_attribute(name, value)
-        send "#{name}_will_change!" unless send(name) == value
+        send "#{name}_will_change!" unless @_ignore_dirty || send(name) == value
 
         @_attributes[name] = value
       end
@@ -43,6 +45,16 @@ module Couchbase
         @meta[:cas] = pristine.meta[:cas]
         clean!
         self
+      end
+
+      def update_attributes_with_dirty(attrs)
+        begin
+          @_ignore_dirty = attrs.delete(:_ignore_dirty)
+
+          update_attributes_without_dirty(attrs)
+        ensure
+          @_ignore_dirty = false
+        end
       end
 
       def save_with_dirty(options = {})
