@@ -173,6 +173,8 @@ module Couchbase
           end
 
           def find_with_children(id, *children)
+            return nil if id.blank?
+
             find_all_with_children(id, *children).first
           end
 

@@ -272,6 +272,12 @@ describe "parent" do
       subject.stubs(bucket: bucket)
     end
 
+    it "returns early for blank ids" do
+      bucket.expects(:get).never
+
+      subject.find_with_children('').should be_nil
+    end
+
     it "finds and returns the proper objects" do
       bucket.expects(:get).with(
         ["parent:1", "child:1"],
