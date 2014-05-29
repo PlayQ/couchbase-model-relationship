@@ -1,7 +1,7 @@
 module Couchbase
   class Model
     module Relationship
-      VERSION = "0.1.13.jm"
+      VERSION = "0.1.13"
     end
   end
 end
