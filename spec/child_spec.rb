@@ -38,33 +38,51 @@ describe "children" do
     end
 
     describe "with collisions" do
+
+      before(:all) do
+        @mock = start_mock
+        bucket = Couchbase.connect(:hostname => @mock.host, :port => @mock.port)
+
+        ChildMergeTest.bucket = bucket
+        ChildTest.bucket = bucket
+        ChildTestParent.bucket = bucket
+      end
+
+      after(:all) do
+        stop_mock @mock
+
+        ChildMergeTest.bucket = nil
+        ChildTest.bucket = nil
+        ChildTestParent.bucket = nil
+      end
+
       let(:collider) { ChildMergeTest.new(parent: parent) }
-      let(:bucket) { stub }
+      let(:existing) { ChildMergeTest.new(parent: parent).save! }
 
       before do
-        parent.id = "parent:#{Time.now.to_i}"
-        ChildMergeTest.stubs(bucket: bucket)
+        parent.id = "parent:#{Time.now.to_f}"
+
+        subject.parent = parent
       end
 
       it "just fails if no merge method" do
-        bucket.expects(:add).raises(Couchbase::Error::KeyExists)
-        ChildTest.stubs(bucket: bucket)
+        subject.class.new(parent: parent).save!
 
         expect { subject.save }.to raise_error(Couchbase::Error::KeyExists)
       end
       
       it "just fails with no parent" do
-        bucket.expects(:add).raises(Couchbase::Error::KeyExists)
-
         collider.parent = nil
+        collider.instance_variable_set(:@id, existing.id)
         collider.expects(:on_key_exists_merge_from_db!).never
 
         expect { collider.save }.to raise_error(Couchbase::Error::KeyExists)
       end
 
       it "just fails with a parent and a non-parent derived id" do
-        collider.instance_variable_set(:@id, "abc123:1234")
-        bucket.expects(:add).raises(Couchbase::Error::KeyExists)
+        ChildMergeTest.bucket.add("abc-123" => "boo")
+
+        collider.instance_variable_set(:@id, "abc-123")
         collider.expects(:on_key_exists_merge_from_db!).never
 
         expect { collider.save }.to raise_error(Couchbase::Error::KeyExists)
@@ -72,9 +90,7 @@ describe "children" do
 
       # These should really exercise a real backend
       it "retries if mergable" do
-        seq = sequence("collision")
-        bucket.expects(:add).raises(Couchbase::Error::KeyExists).in_sequence(seq)
-        bucket.expects(:add).returns(true).in_sequence(seq)
+        existing
 
         collider.expects(:on_key_exists_merge_from_db!)
 
@@ -83,19 +99,20 @@ describe "children" do
       end
 
       it "fails is merging fails" do
-        bucket.expects(:add).raises(Couchbase::Error::KeyExists)
+        existing
 
         collider.expects(:on_key_exists_merge_from_db!).raises(ArgumentError)
         
         expect { collider.save }.to raise_error(ArgumentError)
       end
 
-      it "only retries once" do
-        bucket.expects(:add).raises(Couchbase::Error::KeyExists).twice
+      it "raises if save after merge fails" do
+        existing
 
         collider.expects(:on_key_exists_merge_from_db!)
+        collider.stubs(:save).raises(RuntimeError)
 
-        expect { collider.save }.to raise_error(Couchbase::Error::KeyExists)
+        expect { collider.create }.to raise_error(RuntimeError)
       end
     end
   end

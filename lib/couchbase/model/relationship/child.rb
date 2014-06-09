@@ -11,18 +11,16 @@ module Couchbase
           end
 
           # Should this only fire if we had a parent and assigned the id?
-          retried = false
           begin
             create_without_parent_id(options)
           rescue Couchbase::Error::KeyExists => error
-            if !retried && ok_to_merge_on_key_exists_error?
-              retried = true
+            if ok_to_merge_on_key_exists_error?
               on_key_exists_merge_from_db!
 
-              retry
+              save # Can't retry because that still tries 'add'
+            else
+              raise error
             end
-
-            raise error
           end
         end
 
