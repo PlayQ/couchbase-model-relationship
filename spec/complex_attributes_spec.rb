@@ -38,7 +38,7 @@ describe "complex attributes" do
 
     it "sets values properly" do
       subject.array = [raw, object]
-      subject.array.all? {|c| ComplexTest::Child === c }.should be_true
+      subject.array.all? {|c| ComplexTest::Child === c }.should be
 
       subject.array.map(&:name).should eq(%w(abc exist))
     end

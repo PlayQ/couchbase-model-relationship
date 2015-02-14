@@ -8,13 +8,13 @@ describe "associations" do
   end
 
   it "sets autosave properly" do
-    subject.new('abc', auto_save: true).auto_save.should be_true
-    subject.new('abc').auto_save.should be_false
+    subject.new('abc', auto_save: true).auto_save.should be
+    subject.new('abc').auto_save.should_not be
   end
 
   it "sets autodelete properly" do
-    subject.new('abc', auto_delete: true).auto_delete.should be_true
-    subject.new('abc').auto_delete.should be_false
+    subject.new('abc', auto_delete: true).auto_delete.should be
+    subject.new('abc').auto_delete.should_not be
   end
 
   it "uses the provide class name" do
