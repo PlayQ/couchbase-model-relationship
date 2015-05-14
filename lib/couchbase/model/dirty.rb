@@ -3,7 +3,7 @@ module Couchbase
   class Model
     module Dirty
       extend ActiveSupport::Concern
-      include ActiveModel::Dirty
+      include ::ActiveModel::Dirty
 
       included do
         remove_method :write_attribute
